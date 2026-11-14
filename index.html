@@ -589,7 +589,9 @@ function cerPrompt(){return base()+'THE CEREMONY. The night is over. Scores: '+S
 function askText(prompt,onText){return sample(prompt,{modelTier:'quick',cache:false,onText:onText}).then(function(r){return clean(r.text,420)})}
 function askJSON(prompt){if(typeof sample.json==='function')return sample.json(prompt,{modelTier:'quick',cache:false});return sample(prompt,{modelTier:'quick',cache:false}).then(function(r){var s=r.text,a=s.indexOf('{'),b=s.lastIndexOf('}');return JSON.parse(s.slice(a,b+1))})}
 function failed(e){var code=e&&e.code;if(HIDE[code]){live=false;renderMode();return 'script'}if(code==='cancelled')return 'stop';sysmsg(code==='rate_limited'?t('err_rate'):code==='refused'?t('err_refused'):t('err_generic'));return 'stop'}
-function doSpeak(text){if(!tts||!text)return;var p;try{p=tts.speak(String(text).slice(0,1900),{language:lang})}catch(e){vset('err');return}
+/* the name is written plainly on screen; a voice that follows stress marks gets it with the mark on the second syllable */
+function said(s){return (lang==='bg'&&(!tts.device||tts.natural(lang)))?String(s).replace(/Тамада/g,'Тама\u0300да'):String(s)}
+function doSpeak(text){if(!tts||!text)return;var p;try{p=tts.speak(said(text).slice(0,1900),{language:lang})}catch(e){vset('err');return}
  if(!p||typeof p.then!=='function')return;
  p.then(function(){vset('ok')},function(e){var c=e&&e.code;if(c==='stopped')return;if(c==='not_granted'){tts=null;$('stopbtn').hidden=true;document.querySelectorAll('.hear').forEach(function(x){x.remove()});vstate='off';renderVoice();return}
   vset(c==='no_gesture'?'gesture':c==='rate_limited'?'rate':c==='busy'?'busy':c==='no_voice'?'novoice':'err')})}
